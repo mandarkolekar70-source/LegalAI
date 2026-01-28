@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - LegalAI{% endblock %}
+
+{% block content %}
+
+<div style="display:flex;height:100vh;">
+
+    <!-- ================= SIDEBAR ================= -->
+    <aside class="glass-panel"
+        style="width:260px;margin:1rem;padding:1rem;display:flex;flex-direction:column;">
+
+        <h3 style="margin-bottom:2rem;">⚖️ LegalAI</h3>
+
+        <a href="#" id="newCaseLink" class="nav-link active">New Case</a>
+        <a href="#" id="historyLink" class="nav-link">History</a>
+        <a href="#" id="profileLink" class="nav-link">Profile</a>
+
+        <div style="margin-top:auto;">
+            <button id="logoutBtn" class="btn-primary"
+                style="width:100%;margin-top:1rem;">Logout</button>
+        </div>
+    </aside>
+
+    <!-- ================= MAIN ================= -->
+    <main style="flex:1;padding:1.5rem;overflow-y:auto;">
+
+        <!-- ===== NEW CASE ===== -->
+        <div id="newCaseView" class="dashboard-view">
+
+            <h2>Case Analysis</h2>
+
+            <form id="analysisForm" style="margin-top:1rem;">
+                <textarea name="description" rows="6"
+                    placeholder="Describe the case..."
+                    style="width:100%;margin-bottom:1rem;"></textarea>
+
+                <input type="file" name="files" multiple accept=".pdf">
+
+                <button type="submit" class="btn-primary" style="margin-top:1rem;">
+                    Analyze Case
+                </button>
+            </form>
+
+            <div class="glass-panel" style="margin-top:1.5rem;padding:1rem;">
+                <h3>Classification</h3>
+                <div id="classificationResult">Pending...</div>
+            </div>
+
+            <div class="glass-panel" style="margin-top:1.5rem;padding:1rem;">
+                <h3>AI Insights</h3>
+                <div id="insightsResult">Pending...</div>
+            </div>
+
+        </div>
+
+        <!-- ===== HISTORY ===== -->
+        <div id="historyView" class="dashboard-view" style="display:none;">
+            <h2>Case History</h2>
+            <div id="historyList" style="margin-top:1rem;">
+                Loading history...
+            </div>
+        </div>
+
+        <!-- ===== PROFILE ===== -->
+        <div id="profileView" class="dashboard-view" style="display:none;">
+            <h2>My Profile</h2>
+
+            <div class="glass-panel" style="padding:1.5rem;max-width:500px;">
+                <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+                <p><strong>Name:</strong> <span id="profileName"></span></p>
+                <p><strong>Role:</strong> User</p>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+        return;
+    }
+
+    const views = document.querySelectorAll(".dashboard-view");
+    const links = document.querySelectorAll(".nav-link");
+
+    function showView(viewId, linkId) {
+        views.forEach(v => v.style.display = "none");
+        document.getElementById(viewId).style.display = "block";
+
+        links.forEach(l => l.classList.remove("active"));
+        document.getElementById(linkId).classList.add("active");
+
+        if (viewId === "historyView") loadHistory();
+        if (viewId === "profileView") loadProfile();
+    }
+
+    document.getElementById("newCaseLink").onclick = e => {
+        e.preventDefault();
+        showView("newCaseView", "newCaseLink");
+    };
+
+    document.getElementById("historyLink").onclick = e => {
+        e.preventDefault();
+        showView("historyView", "historyLink");
+    };
+
+    document.getElementById("profileLink").onclick = e => {
+        e.preventDefault();
+        showView("profileView", "profileLink");
+    };
+
+    // ---------------- ANALYZE CASE ----------------
+    document.getElementById("analysisForm").addEventListener("submit", async e => {
+        e.preventDefault();
+
+        const formData = new FormData(e.target);
+
+        const res = await fetch("/api/analyze", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + token
+            },
+            body: formData
+        });
+
+        const data = await res.json();
+
+        document.getElementById("classificationResult").innerText =
+            data.classification.primary + " (" + data.classification.confidence + ")";
+
+        document.getElementById("insightsResult").innerText =
+            data.analysis.legal_opinion;
+    });
+
+    // ---------------- HISTORY ----------------
+    async function loadHistory() {
+        const res = await fetch("/api/history/", {
+            headers: {
+                "Authorization": "Bearer " + token
+            }
+        });
+
+        const data = await res.json();
+
+        const list = document.getElementById("historyList");
+
+        if (!data.length) {
+            list.innerText = "No history found.";
+            return;
+        }
+
+        list.innerHTML = data.map(c => `
+            <div class="glass-panel" style="padding:1rem;margin-bottom:1rem;">
+                <strong>${c.case_type}</strong><br>
+                <small>${new Date(c.created_at).toLocaleDateString()}</small>
+                <p>${c.description}</p>
+            </div>
+        `).join("");
+    }
+
+    // ---------------- PROFILE ----------------
+    function loadProfile() {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        document.getElementById("profileEmail").innerText = payload.sub;
+        document.getElementById("profileName").innerText = "Logged-in User";
+    }
+
+    // ---------------- LOGOUT ----------------
+    document.getElementById("logoutBtn").onclick = () => {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+    };
+
+});
+</script>
+{% endblock %}

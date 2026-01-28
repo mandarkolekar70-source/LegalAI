@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}LegalAI - Intelligent Legal Research{% endblock %}
+
+{% block content %}
+<div style="background: var(--bg-gradient); min-height: 100vh; display: flex; flex-direction: column;">
+    <nav style="padding: 1.5rem 3rem; display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-weight: 700; font-size: 1.5rem;">⚖️ LegalAI</div>
+        <div>
+            <a href="/login" class="btn-primary" style="text-decoration: none; display: inline-block;">Get Started</a>
+        </div>
+    </nav>
+
+    <div
+        style="padding: 4rem 2rem; text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <h1
+            style="font-size: 3.5rem; margin-bottom: 1.5rem; background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            Your AI Legal Assistant
+        </h1>
+        <p
+            style="font-size: 1.25rem; color: var(--text-secondary); max-width: 600px; margin-bottom: 3rem; line-height: 1.6;">
+            Analyze cases, retrieve precedents, and generate legal insights instantly using advanced AI and RAG
+            technology.
+        </p>
+        <div style="display: flex; gap: 1rem;">
+            <a href="/signup" class="btn-primary"
+                style="text-decoration: none; font-size: 1.1rem; padding: 1rem 2rem;">Create Free Account</a>
+            <a href="/login"
+                style="padding: 1rem 2rem; border: 1px solid var(--glass-border); border-radius: 0.5rem; color: var(--text-primary); text-decoration: none; transition: background 0.2s;">Login</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

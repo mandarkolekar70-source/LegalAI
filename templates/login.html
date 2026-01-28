@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Login - LegalAI{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+    <div class="glass-panel" style="padding: 2rem; width: 100%; max-width: 400px;">
+        <h2 style="text-align: center; margin-bottom: 2rem;">Welcome Back</h2>
+        <form id="loginForm">
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Email</label>
+                <input type="email" name="email" required placeholder="attorney@law.com">
+            </div>
+            <div style="margin-bottom: 2rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Password</label>
+                <input type="password" name="password" required placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn-primary" style="width: 100%;">Sign In</button>
+        </form>
+        <p style="text-align: center; margin-top: 1.5rem; color: var(--text-secondary);">
+            Don't have an account? <a href="/signup" style="color: var(--accent-color); text-decoration: none;">Sign up</a>
+        </p>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    
+    try {
+        const response = await fetch('/auth/login', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem('token', data.access_token);
+            window.location.href = '/dashboard';
+        } else {
+            alert('Login failed');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+});
+</script>
+{% endblock %}

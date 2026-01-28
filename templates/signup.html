@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up - LegalAI{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+    <div class="glass-panel" style="padding: 2rem; width: 100%; max-width: 400px;">
+        <h2 style="text-align: center; margin-bottom: 2rem;">Create Account</h2>
+        <form id="signupForm">
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Full Name</label>
+                <input type="text" name="full_name" required placeholder="John Doe">
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Email</label>
+                <input type="email" name="email" required placeholder="attorney@law.com">
+            </div>
+            <div style="margin-bottom: 2rem;">
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Password</label>
+                <input type="password" name="password" maxlength="64" required>
+
+            </div>
+            <button type="submit" class="btn-primary" style="width: 100%;">Create Account</button>
+        </form>
+        <p style="text-align: center; margin-top: 1.5rem; color: var(--text-secondary);">
+            Already have an account? <a href="/login" style="color: var(--accent-color); text-decoration: none;">Sign
+                in</a>
+        </p>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            const response = await fetch('/auth/signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                alert('Account created! Please login.');
+                window.location.href = '/login';
+            } else {
+                let errorMessage = 'Signup failed';
+                try {
+                    const error = await response.json();
+                    errorMessage += ': ' + (error.detail || response.statusText);
+                } catch (e) {
+                    errorMessage += ': ' + response.statusText;
+                }
+                alert(errorMessage);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An unexpected error occurred. Please try again.');
+        }
+    });
+</script>
+{% endblock %}
